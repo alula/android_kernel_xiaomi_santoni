@@ -57,9 +57,7 @@ config LT8912
 	To compile this driver as a module, choose M here: the
 	module will be called LT8912.
 
-if VT
-	source "drivers/video/console/Kconfig"
-endif
+source "drivers/video/console/Kconfig"
 
 if FB || SGI_NEWPORT_CONSOLE
 	source "drivers/video/logo/Kconfig"

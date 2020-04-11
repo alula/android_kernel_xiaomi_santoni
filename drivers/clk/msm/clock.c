@@ -414,7 +414,7 @@ void clk_disable(struct clk *clk)
 	if (IS_ERR_OR_NULL(clk))
 		return;
 	name = clk->dbg_name;
-
+	
 	spin_lock_irqsave(&clk->lock, flags);
 	WARN(!clk->prepare_count,
 			"%s: Never called prepare or calling disable after unprepare\n",

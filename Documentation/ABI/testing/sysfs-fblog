@@ -1,0 +1,9 @@
+What:		/sys/class/graphics/fblog/active
+Date:		June 2012
+KernelVersion:	3.6
+Contact:	David Herrmann <dh.herrmann@googlemail.com>
+Description:	Enable/Disable fblog. When setting this to 0, fblog will stop
+		writing to framebuffers and other applications can use the
+		graphics subsystem. When setting this to 1, fblog will rescan
+		the system for all framebuffers and resume drawing the kernel
+		log onto all framebuffers.

@@ -6,7 +6,7 @@ menu "Console display driver support"
 
 config VGA_CONSOLE
 	bool "VGA text console" if EXPERT || !X86
-	depends on !4xx && !8xx && !SPARC && !M68K && !PARISC && !FRV && \
+	depends on VT && !4xx && !8xx && !SPARC && !M68K && !PARISC && !FRV && \
 		!SUPERH && !BLACKFIN && !AVR32 && !MN10300 && !CRIS && \
 		(!ARM || ARCH_FOOTBRIDGE || ARCH_INTEGRATOR || ARCH_NETWINDER) && \
 		!ARM64
@@ -48,7 +48,7 @@ config VGACON_SOFT_SCROLLBACK_SIZE
 	 screenfuls of scrollback buffer
 
 config MDA_CONSOLE
-	depends on !M68K && !PARISC && ISA
+	depends on VT && !M68K && !PARISC && ISA
 	tristate "MDA text console (dual-headed)"
 	---help---
 	  Say Y here if you have an old MDA or monochrome Hercules graphics
@@ -64,7 +64,7 @@ config MDA_CONSOLE
 
 config SGI_NEWPORT_CONSOLE
         tristate "SGI Newport Console support"
-        depends on SGI_IP22 
+        depends on VT && SGI_IP22 
         select FONT_SUPPORT
         help
           Say Y here if you want the console on the Newport aka XL graphics
@@ -93,12 +93,34 @@ config DUMMY_CONSOLE_ROWS
 
 config FRAMEBUFFER_CONSOLE
 	tristate "Framebuffer Console support"
-	depends on FB && !UML
+	depends on VT && FB && !UML
 	select VT_HW_CONSOLE_BINDING
 	select CRC32
 	select FONT_SUPPORT
 	help
 	  Low-level framebuffer-based console driver.
+
++config FBLOG
+	tristate "Framebuffer Kernel Log Driver"
+	depends on FB && !FRAMEBUFFER_CONSOLE
+	default n
+	select FONT_SUPPORT
+	help
+	  This driver displays all kernel log messages on all connected
+	  framebuffers. It is mutually exclusive with CONFIG_FRAMEBUFFER_CONSOLE
+	  and CONFIG_VT. It was mainly created for debugging purposes when
+	  CONFIG_VT is not selected but you still want kernel boot messages on
+	  the screen.
+
+	  This driver overwrites all other graphics output on the framebuffer as
+	  long as it is active so the kernel log will always be visible. You
+	  need to disable this driver via sysfs to be able to start another
+	  graphics application.
+
+	  If unsure, say N.
+
+	  To compile this driver as a module, choose M here: the module will
+	  be called fblog.
 
 config FRAMEBUFFER_CONSOLE_DETECT_PRIMARY
        bool "Map the console to the primary display device"
@@ -128,7 +150,7 @@ config FRAMEBUFFER_CONSOLE_ROTATION
 
 config STI_CONSOLE
         bool "STI text console"
-        depends on PARISC
+        depends on VT && PARISC
         select FONT_SUPPORT
         default y
         help

@@ -26,6 +26,7 @@
 #include <linux/module.h>
 #include <linux/platform_data/simplefb.h>
 #include <linux/platform_device.h>
+#include <linux/kernel.h>
 
 static struct fb_fix_screeninfo simplefb_fix = {
 	.id		= "simple",
@@ -170,15 +171,18 @@ static int simplefb_probe(struct platform_device *pdev)
 	struct fb_info *info;
 	struct resource *mem;
 
+	printk("sfb pre options\n");
 	if (fb_get_options("simplefb", NULL))
 		return -ENODEV;
 
+	printk("sfb probe: %s\n", pdev->dev.init_name);
 	ret = -ENODEV;
 	if (dev_get_platdata(&pdev->dev))
 		ret = simplefb_parse_pd(pdev, &params);
 	else if (pdev->dev.of_node)
 		ret = simplefb_parse_dt(pdev, &params);
 
+	printk("ret1: %x\n", ret);
 	if (ret)
 		return ret;
 
@@ -197,6 +201,7 @@ static int simplefb_probe(struct platform_device *pdev)
 	info->fix.smem_start = mem->start;
 	info->fix.smem_len = resource_size(mem);
 	info->fix.line_length = params.stride;
+	printk("phys base: %p len: %x\n", info->fix.smem_start, info->fix.smem_len);
 
 	info->var = simplefb_var;
 	info->var.xres = params.width;
@@ -219,7 +224,7 @@ static int simplefb_probe(struct platform_device *pdev)
 
 	info->fbops = &simplefb_ops;
 	info->flags = FBINFO_DEFAULT | FBINFO_MISC_FIRMWARE;
-	info->screen_base = ioremap_wc(info->fix.smem_start,
+	info->screen_base = ioremap_cache(info->fix.smem_start,
 				       info->fix.smem_len);
 	if (!info->screen_base) {
 		framebuffer_release(info);
@@ -273,7 +278,14 @@ static struct platform_driver simplefb_driver = {
 	.probe = simplefb_probe,
 	.remove = simplefb_remove,
 };
-module_platform_driver(simplefb_driver);
+//module_platform_driver(simplefb_driver);
+
+static int __init simplefb_init(void)
+{
+	printk("init %s\n", __func__);
+	return platform_driver_register(&simplefb_driver);
+}
+arch_initcall(simplefb_init);
 
 MODULE_AUTHOR("Stephen Warren <swarren@wwwdotorg.org>");
 MODULE_DESCRIPTION("Simple framebuffer driver");
